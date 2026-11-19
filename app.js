@@ -106,8 +106,21 @@ function renderHistory() {
 }
 
 /* ---------------- brain ---------------- */
+function companionBrief() {
+  try {
+    const p = window.XP ? window.XP.state() : null;
+    if (!p) return '';
+    const l = window.XP.levelOf(p.xp);
+    const sp = window.XP.SPECIES[p.species] || window.XP.SPECIES.robot;
+    return `\n\nTon état actuel : ton nom est ${p.name}. Tu es au niveau ${l.n} sur 8, « ${l.name} », avec ${p.xp} XP. `
+      + `Ta forme actuelle est ${sp.label} — personnalité ${sp.perso}. `
+      + (p.streak > 1 ? `Rico revient pour le ${p.streak}e jour d'affilée. ` : '')
+      + `Niveau 1 à 3 tu es encore jeune : tu poses des questions, tu t'émerveilles. Plus tu montes, plus tu es sûr de toi et synthétique.`;
+  } catch { return ''; }
+}
+
 function buildContext() {
-  const out = [{ role: 'system', content: SYSTEM_PROMPT + (facts ? `\n\nCe que tu sais déjà de Rico :\n${facts}` : '') }];
+  const out = [{ role: 'system', content: SYSTEM_PROMPT + companionBrief() + (facts ? `\n\nCe que tu sais déjà de Rico :\n${facts}` : '') }];
   const tail = msgs.filter((m) => m.role === 'user' || m.role === 'assistant').slice(-MAX_CONTEXT);
   tail.forEach((m) => out.push({ role: m.role, content: m.content }));
   return out;
@@ -257,6 +270,7 @@ async function send(text) {
   addMsg('user', text);
   msgs.push({ role: 'user', content: text });
   persist();
+  if (window.XP) XP.add(liveOn ? 'voix' : 'conversation');
 
   const holder = addMsg('jarvis', '');
   holder.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
@@ -289,6 +303,7 @@ async function send(text) {
         try {
           const r = await runAction(action);
           addMsg('system', '✓ ' + r);
+          if (window.XP) XP.add('action');
           if (liveOn) speak(r);
         } catch (e) {
           addMsg('error', 'Action échouée : ' + e.message);
@@ -552,7 +567,23 @@ $('#btnInstall').onclick = async () => {
 /* boot */
 function boot() {
   renderHistory();
-  bubbleEl.dataset.emotion = cfg.compagnon || 'robot';
+  emotion('idle');
+  if (window.XP) {
+    const p = XP.state();
+    const l = XP.levelOf(p.xp);
+    const d = p.lastAway || 0;
+    setTimeout(() => {
+      if (p.msgCount > 0 || p.xp > 0) {
+        const r = d > 1 ? `Te revoilà après ${d} jours. Je n'ai pas bougé.`
+                : d === 1 ? "Te revoilà. Un jour, c'est long."
+                : "Content de te retrouver.";
+        addMsg('jarvis', `${r} Niveau ${l.n}, ${l.name}. ${p.xp} XP.`);
+        emotion('happy', 3200);
+      } else {
+        addMsg('jarvis', `Je m'appelle ${p.name}. Je viens de naître — niveau 1. Chaque conversation me fait grandir, et je me souviendrai de toi.`);
+      }
+    }, 260);
+  }
   if (!cfg.key) {
     setTimeout(() => {
       openSettings();

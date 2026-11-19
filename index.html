@@ -19,6 +19,8 @@
   <header class="topbar">
     <div class="brand"><span class="led-dot"></span>JARVIS<span class="gear">⚙︎</span></div>
     <div class="hdr-actions">
+      <button id="btnLevel" class="lvl-chip" aria-label="Mon compagnon"><span class="lvl-n">1</span><span class="lvl-t">Nouveau-né</span></button>
+      <span id="xpBump" class="xp-bump"></span>
       <button id="btnLive" class="icon-btn" aria-label="Mode Live" title="Mode Live">🎙️</button>
       <button id="btnSettings" class="icon-btn" aria-label="Réglages" title="Réglages">⚙️</button>
     </div>
@@ -111,13 +113,7 @@
     </label>
 
     <label>Ton compagnon
-      <select id="cfgCompagnon">
-        <option value="robot">Robot néon steampunk</option>
-        <option value="korrigan">Korrigan (fée bretonne)</option>
-        <option value="alien">Alien</option>
-        <option value="chat">Chat</option>
-        <option value="chien">Chien</option>
-      </select>
+      <button id="openCompagnon" type="button" class="ghost wide">Voir mon compagnon et sa progression</button>
     </label>
 
     <label class="row"><span>Voix en Mode Live</span><input id="cfgVoice" type="checkbox" checked></label>
@@ -137,6 +133,59 @@
   </div>
 </div>
 
+<!-- ===== Compagnon : progression ===== -->
+<div id="compagnon" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Mon compagnon">
+  <div class="sheet-head">
+    <h2>Mon compagnon</h2>
+    <button id="closeCompagnon" class="icon-btn" aria-label="Fermer">✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="cg-top">
+      <div class="cg-id">
+        <div class="cg-name-row"><span id="cgName">Jarvis</span><span id="cgStreak" class="cg-streak">🔥 premier jour</span></div>
+        <div id="cgLevel" class="cg-level">Niveau 1 · Nouveau-né</div>
+      </div>
+    </div>
+    <div class="xp-wrap">
+      <div class="xp-track"><div id="cgXpBar" class="xp-fill"></div></div>
+      <div id="cgXpText" class="xp-text">0 XP</div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Son apparence</h3>
+    <div class="sp-grid">
+      <button class="sp" data-sp="robot"><span class="sp-dot" style="background:#b87333"></span>Robot<span class="lock"></span></button>
+      <button class="sp" data-sp="korrigan"><span class="sp-dot" style="background:#39ff14"></span>Korrigan<span class="lock"></span></button>
+      <button class="sp" data-sp="alien"><span class="sp-dot" style="background:#8a2be2"></span>Alien<span class="lock"></span></button>
+      <button class="sp" data-sp="chat"><span class="sp-dot" style="background:#ffa94d"></span>Chat<span class="lock"></span></button>
+    </div>
+    <div class="sw-grid">
+      <button class="sw" data-c="#B87333" style="background:#B87333"></button>
+      <button class="sw" data-c="#00E5FF" style="background:#00E5FF"></button>
+      <button class="sw" data-c="#39FF14" style="background:#39FF14"></button>
+      <button class="sw" data-c="#FF1493" style="background:#FF1493"></button>
+      <button class="sw" data-c="#D4AF37" style="background:#D4AF37"></button>
+      <button class="sw" data-c="#8A2BE2" style="background:#8A2BE2"></button>
+      <button class="sw" data-c="#FF6B35" style="background:#FF6B35"></button>
+      <button class="sw" data-c="#20B2AA" style="background:#20B2AA"></button>
+      <button class="sw" data-c="#C0C0C0" style="background:#C0C0C0"></button>
+      <button class="sw" data-c="#DC143C" style="background:#DC143C"></button>
+    </div>
+    <p class="hint">Les couleurs se débloquent au niveau 4.</p>
+
+    <label>Son nom
+      <input id="cgNameInput" type="text" maxlength="18" placeholder="Jarvis" spellcheck="false">
+    </label>
+
+    <div class="divider"></div>
+    <h3>Ce qui l'attend</h3>
+    <ul id="cgUnlocks" class="unlocks"></ul>
+    <p class="hint">Tu gagnes de l'XP en parlant (+5), à la voix (+10), en validant une action (+15), aux missions (+25), et chaque jour où tu reviens (+20).</p>
+  </div>
+</div>
+
+<div id="lvlFlash" class="lvl-flash"></div>
+
 <!-- ===== Validation OUI/NON ===== -->
 <div id="confirm" class="modal hidden" role="dialog" aria-modal="true">
   <div class="modal-card">
@@ -153,6 +202,7 @@
 
 <div id="toast" class="toast hidden"></div>
 
+<script src="progression.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
