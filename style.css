@@ -322,3 +322,17 @@ body{
 .lvl-flash-inner span{display:block;font-size:11px;letter-spacing:.26em;color:var(--cyan);margin-bottom:6px}
 .lvl-flash-inner strong{display:block;font-size:23px;color:var(--brass);text-shadow:0 0 18px rgba(212,175,55,.55)}
 .lvl-flash-inner em{display:block;margin-top:9px;font-size:12px;font-style:normal;color:var(--green)}
+
+/* ---------- missions ---------- */
+.chips{display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap}
+.chip{padding:8px 14px;border-radius:999px;border:1px solid #3a2f22;background:#15110c;color:#c9bda8;font-size:13px}
+.chip.active{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 0 1px rgba(0,229,255,.25) inset}
+.ms-list{list-style:none;padding:0;margin:0}
+.ms-item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #ffffff10}
+.ms-item.off{opacity:.45}
+.ms-main{flex:1;min-width:0}
+.ms-text{font-size:14px;color:#f0e9d8;overflow:hidden;text-overflow:ellipsis}
+.ms-meta{font-size:11px;color:#8d8577;margin-top:3px}
+.ms-toggle,.ms-del{width:34px;height:34px;border-radius:9px;border:1px solid #3a2f22;background:#15110c;color:#c9bda8;font-size:14px}
+.ms-del{color:#ff6b6b}
+.ms-empty{color:#8d8577;font-size:13px;padding:8px 0}

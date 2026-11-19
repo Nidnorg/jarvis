@@ -1,11 +1,12 @@
 /* Jarvis service worker — coquille hors-ligne */
-const CACHE = 'jarvis-v2';
+const CACHE = 'jarvis-v3';
 const SHELL = [
   './',
   './index.html',
   './style.css',
   './app.js',
   './progression.js',
+  './missions.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png'

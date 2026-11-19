@@ -28,7 +28,10 @@ Règles absolues :
 
 Actions disponibles (uniquement si Rico le demande explicitement) : tu termines ta réponse par une ligne exactement de la forme
 <<<ACTION {"type":"open_url","url":"https://...","label":"Ouvrir ..."}>>>
-Types autorisés : open_url, copy_text, save_note, add_fact. Une seule action par réponse. Le système demandera confirmation à Rico avant d'exécuter.`;
+Types autorisés : open_url, copy_text, save_note, add_fact, add_mission. Une seule action par réponse.
+Pour une mission récurrente : <<<ACTION {"type":"add_mission","title":"Point ventes GPA X","prompt":"Résume mes ventes de la semaine.","kind":"weekly","time":"08:00","dow":1}>>>
+kind vaut daily, weekly ou once ; dow va de 0 (dimanche) à 6 (samedi).
+Le système demandera confirmation à Rico avant d'exécuter.`;
 
 /* ---------------- storage ---------------- */
 const store = {
@@ -178,6 +181,46 @@ async function streamChat(onDelta) {
   return full;
 }
 
+/* ---------------- missions : appeler le cerveau hors conversation ---------------- */
+async function rawAsk(prompt) {
+  if (!cfg.key || !cfg.base || !cfg.model) throw new Error('aucun cerveau configuré');
+  const url = cfg.base.replace(/\/+$/, '') + '/chat/completions';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+    body: JSON.stringify({
+      model: cfg.model,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT + companionBrief() + (facts ? `\n\nCe que tu sais déjà de Rico :\n${facts}` : '') },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.6
+    })
+  });
+  if (!res.ok) throw new Error('le cerveau a refusé (' + res.status + ')');
+  const j = await res.json();
+  const d = j.choices && j.choices[0] && j.choices[0].message;
+  return (d && d.content) || '(rien)';
+}
+
+async function runDueMissions() {
+  if (!window.Missions || !cfg.key) return;
+  await window.Missions.tick(
+    async (text, m) => {
+      const el = addMsg('jarvis', String(text));
+      el.classList.add('mission');
+      const tag = document.createElement('span');
+      tag.className = 'meta';
+      tag.textContent = 'mission · ' + m.title;
+      el.prepend(tag);
+      msgs.push({ role: 'assistant', content: `[${m.title}] ${text}` });
+      persist();
+      if (liveOn) speak(text);
+    },
+    rawAsk
+  );
+}
+
 /* ---------------- actions ---------------- */
 const ACTION_RE = /<<<ACTION\s*(\{[\s\S]*?\})\s*>>>/;
 
@@ -193,7 +236,8 @@ const ACTION_LABEL = {
   open_url: 'Ouvrir un lien',
   copy_text: 'Copier dans le presse-papier',
   save_note: 'Enregistrer une note',
-  add_fact: 'Mémoriser un fait'
+  add_fact: 'Mémoriser un fait',
+  add_mission: 'Créer une mission récurrente'
 };
 
 function askConfirm(action) {
@@ -250,6 +294,18 @@ async function runAction(a) {
       store.set(K_FACTS, facts);
       $('#cfgFacts').value = facts;
       return 'Mémorisé.';
+    }
+    case 'add_mission': {
+      if (!window.Missions) throw new Error('module missions indisponible');
+      const m = window.Missions.create({
+        title: a.title || a.mission || 'Mission',
+        prompt: a.prompt || a.task || a.title || '',
+        kind: a.kind === 'weekly' ? 'weekly' : a.kind === 'once' ? 'once' : 'daily',
+        time: /^\d{2}:\d{2}$/.test(a.time || '') ? a.time : '08:00',
+        dow: typeof a.dow === 'number' ? a.dow : 1
+      });
+      window.Missions.render();
+      return `Mission « ${m.title} » créée. Elle tournera à la prochaine ouverture après l'heure dite.`;
     }
     default:
       throw new Error('Action non autorisée : ' + a.type);
@@ -438,10 +494,11 @@ function openSettings() {
   $('#cfgKey').value = cfg.key || '';
   $('#cfgModel').value = cfg.model || '';
   $('#cfgVoice').checked = !!cfg.voice;
-  $('#cfgCompagnon').value = cfg.compagnon || 'robot';
+  const cg = $('#cfgCompagnon');
+  if (cg) cg.value = cfg.compagnon || 'robot';
   $('#cfgFacts').value = facts || '';
   $('#settings').classList.remove('hidden');
-  emotion('curious' in bubbleEl.dataset ? 'idle' : 'idle');
+  emotion('idle');
 }
 function closeSettings() {
   cfg.base = $('#cfgBase').value.trim().replace(/\/+$/, '');
@@ -595,4 +652,7 @@ function boot() {
   }
   if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
 }
+
+/* expose pour les autres modules (missions) */
+window.Jarvis = { send, addMsg, toast, emotion, speak, isBusy: () => busy };
 boot();

@@ -116,6 +116,10 @@
       <button id="openCompagnon" type="button" class="ghost wide">Voir mon compagnon et sa progression</button>
     </label>
 
+    <label>Ce qu'il fait tout seul
+      <button id="openMissions" type="button" class="ghost wide">Missions et briefing du matin</button>
+    </label>
+
     <label class="row"><span>Voix en Mode Live</span><input id="cfgVoice" type="checkbox" checked></label>
 
     <div class="divider"></div>
@@ -186,6 +190,38 @@
 
 <div id="lvlFlash" class="lvl-flash"></div>
 
+<!-- ===== Missions ===== -->
+<div id="missions" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Missions">
+  <div class="sheet-head">
+    <h2>Missions</h2>
+    <button id="closeMissions" class="icon-btn" aria-label="Fermer">✕</button>
+  </div>
+  <div class="sheet-body">
+    <p class="hint">Une mission, c'est une phrase que Jarvis exécute tout seul au moment que tu choisis. Il te montre le résultat ici, et demande ton OUI si l'action est irréversible.</p>
+
+    <form id="msForm">
+      <label>Ce que Jarvis doit faire
+        <textarea id="msText" rows="2" placeholder="Ex : résume mes ventes GPA X de la veille"></textarea>
+      </label>
+      <div id="msFreq" class="chips">
+        <button type="button" class="chip active" data-f="day">chaque jour</button>
+        <button type="button" class="chip" data-f="week">chaque semaine</button>
+        <button type="button" class="chip" data-f="once">une fois</button>
+      </div>
+      <label>À quelle heure
+        <input id="msHour" type="time" value="08:00">
+      </label>
+      <button type="submit" class="primary wide">Ajouter la mission</button>
+    </form>
+
+    <div class="divider"></div>
+    <h3>En place</h3>
+    <ul id="msList" class="ms-list"></ul>
+    <p class="hint">Les missions tournent quand l'app est ouverte. Ferme-la et elles attendent ton retour — elles ne ratent rien.</p>
+  </div>
+</div>
+
+
 <!-- ===== Validation OUI/NON ===== -->
 <div id="confirm" class="modal hidden" role="dialog" aria-modal="true">
   <div class="modal-card">
@@ -203,6 +239,7 @@
 <div id="toast" class="toast hidden"></div>
 
 <script src="progression.js"></script>
+<script src="missions.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
